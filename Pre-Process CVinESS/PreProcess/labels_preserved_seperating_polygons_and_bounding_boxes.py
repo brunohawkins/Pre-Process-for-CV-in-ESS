@@ -52,15 +52,19 @@ def create_segmentation_mask(img_width, img_height, polygons):
 def process_folder(input_folder, output_folder):
     json_files = [f for f in os.listdir(input_folder) if f.endswith('.json')]
 
+    # Create output folder for masks
+    output_mask_folder = os.path.join(output_folder, 'labelled_segmentation_mask_images')
+    os.makedirs(output_mask_folder, exist_ok=True)
+
     for json_file in json_files:
         img_name, img_width, img_height, polygons = parse_json(os.path.join(input_folder, json_file))
         mask = create_segmentation_mask(img_width, img_height, polygons)
 
-        mask_save_path = os.path.join(output_folder, os.path.splitext(json_file)[0] + '_mask.png')
+        mask_save_path = os.path.join(output_mask_folder, os.path.splitext(json_file)[0] + '_mask.png')
         cv2.imwrite(mask_save_path, cv2.cvtColor(mask, cv2.COLOR_RGB2BGR))  # Save as PNG
 
     messagebox.showinfo('Processing Complete',
-                        f'Processed {len(json_files)} JSON files.\nMasks saved in {output_folder}.')
+                        f'Processed {len(json_files)} JSON files.\nMasks saved in {output_mask_folder}.')
 
 
 def select_input_folder():
