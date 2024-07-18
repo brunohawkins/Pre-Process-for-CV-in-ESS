@@ -53,7 +53,9 @@ def parse_labelme_json(json_file):
 
 def save_segmentation_json(image_name, polygons, output_folder):
     if polygons:
-        seg_output_file = os.path.join(output_folder, f'{os.path.splitext(image_name)[0]}_seg.json')
+        seg_output_folder = os.path.join(output_folder, 'segmentation_masks')
+        os.makedirs(seg_output_folder, exist_ok=True)
+        seg_output_file = os.path.join(seg_output_folder, f'{os.path.splitext(image_name)[0]}_seg.json')
         data = {'image_name': image_name, 'polygons': polygons}
         try:
             with open(seg_output_file, 'w') as f:
@@ -66,7 +68,9 @@ def save_segmentation_json(image_name, polygons, output_folder):
 
 def save_object_detection_json(image_name, bounding_boxes, output_folder):
     if bounding_boxes:
-        obj_output_file = os.path.join(output_folder, f'{os.path.splitext(image_name)[0]}_ob.json')
+        obj_output_folder = os.path.join(output_folder, 'bounding_boxes')
+        os.makedirs(obj_output_folder, exist_ok=True)
+        obj_output_file = os.path.join(obj_output_folder, f'{os.path.splitext(image_name)[0]}_ob.json')
         data = {'image_name': image_name, 'bounding_boxes': bounding_boxes}
         try:
             with open(obj_output_file, 'w') as f:
@@ -116,4 +120,3 @@ process_button.pack(pady=20)
 
 # Start the GUI event loop
 root.mainloop()
-
