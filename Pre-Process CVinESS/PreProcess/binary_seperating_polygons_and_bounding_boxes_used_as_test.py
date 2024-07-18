@@ -3,18 +3,21 @@ from tkinter import filedialog, messagebox
 import json
 import os
 
-
 def parse_labelme_json(json_file):
     try:
         with open(json_file, 'r') as f:
             data = json.load(f)
 
-        # Determine version and handle accordingly
+        # Extract image metadata and shapes
         if 'version' in data and data['version'] == '5.2.1':
             image_name = data['imagePath'].split('\\')[-1]  # Windows path format
+            imagewidth = data['imageWidth']
+            imageheight = data['imageHeight']
             shapes = data['shapes']
         elif 'version' in data and data['version'] == '5.5.0':
             image_name = os.path.basename(data['imagePath'])  # Mac/Linux path format
+            imagewidth = data['imageWidth']
+            imageheight = data['imageHeight']
             shapes = data['shapes']
         else:
             raise ValueError("Unsupported LabelMe JSON version")
@@ -27,7 +30,7 @@ def parse_labelme_json(json_file):
             points = shape['points']
 
             if shape['shape_type'] == 'rectangle':
-                # Adjust handling of rectangle shape based on version
+                # Handle rectangle shapes
                 if 'version' in data and data['version'] == '5.2.1':
                     xmin = shape['points'][0][0]
                     ymin = shape['points'][0][1]
@@ -42,21 +45,26 @@ def parse_labelme_json(json_file):
                 bounding_boxes.append({'label': label, 'xmin': xmin, 'ymin': ymin, 'xmax': xmax, 'ymax': ymax})
 
             elif shape['shape_type'] == 'polygon':
+                # Handle polygon shapes
                 polygons.append({'label': label, 'points': points})
 
-        return image_name, polygons, bounding_boxes
+        return image_name, imagewidth, imageheight, polygons, bounding_boxes
 
     except Exception as e:
         print(f"Error parsing {json_file}: {str(e)}")
-        return None, None, None
+        return None, None, None, None, None
 
-
-def save_segmentation_json(image_name, polygons, output_folder):
+def save_segmentation_json(image_name, imagewidth, imageheight, polygons, output_folder):
     if polygons:
         seg_output_folder = os.path.join(output_folder, 'segmentation_masks')
         os.makedirs(seg_output_folder, exist_ok=True)
         seg_output_file = os.path.join(seg_output_folder, f'{os.path.splitext(image_name)[0]}_seg.json')
-        data = {'image_name': image_name, 'polygons': polygons}
+        data = {
+            'image_name': image_name,
+            'imagewidth': imagewidth,
+            'imageheight': imageheight,
+            'polygons': polygons
+        }
         try:
             with open(seg_output_file, 'w') as f:
                 json.dump(data, f, indent=4)
@@ -65,13 +73,17 @@ def save_segmentation_json(image_name, polygons, output_folder):
     else:
         print(f"No segmentation data for {image_name}. Skipping creation of _seg.json file.")
 
-
-def save_object_detection_json(image_name, bounding_boxes, output_folder):
+def save_object_detection_json(image_name, imagewidth, imageheight, bounding_boxes, output_folder):
     if bounding_boxes:
         obj_output_folder = os.path.join(output_folder, 'bounding_boxes')
         os.makedirs(obj_output_folder, exist_ok=True)
         obj_output_file = os.path.join(obj_output_folder, f'{os.path.splitext(image_name)[0]}_ob.json')
-        data = {'image_name': image_name, 'bounding_boxes': bounding_boxes}
+        data = {
+            'image_name': image_name,
+            'imagewidth': imagewidth,
+            'imageheight': imageheight,
+            'bounding_boxes': bounding_boxes
+        }
         try:
             with open(obj_output_file, 'w') as f:
                 json.dump(data, f, indent=4)
@@ -80,18 +92,17 @@ def save_object_detection_json(image_name, bounding_boxes, output_folder):
     else:
         print(f"No bounding box data for {image_name}. Skipping creation of _ob.json file.")
 
-
 def process_json_files(input_folder, output_folder):
     for filename in os.listdir(input_folder):
         if filename.endswith('.json'):
             try:
                 json_file = os.path.join(input_folder, filename)
                 print(f"Processing file: {json_file}")  # Debug print
-                image_name, polygons, bounding_boxes = parse_labelme_json(json_file)
+                image_name, imagewidth, imageheight, polygons, bounding_boxes = parse_labelme_json(json_file)
 
                 if image_name:
-                    save_segmentation_json(image_name, polygons, output_folder)
-                    save_object_detection_json(image_name, bounding_boxes, output_folder)
+                    save_segmentation_json(image_name, imagewidth, imageheight, polygons, output_folder)
+                    save_object_detection_json(image_name, imagewidth, imageheight, bounding_boxes, output_folder)
                     print(f"Processed: {filename}")
                 else:
                     print(f"No valid data found in {filename}. Skipping.")
@@ -101,14 +112,12 @@ def process_json_files(input_folder, output_folder):
 
     messagebox.showinfo("Batch Processing", "All JSON files processed successfully.")
 
-
 def select_input_folder():
     input_folder = filedialog.askdirectory(title="Select Input Folder")
     if input_folder:
         output_folder = filedialog.askdirectory(title="Select Output Folder")
         if output_folder:
             process_json_files(input_folder, output_folder)
-
 
 # Create the main application window
 root = tk.Tk()
