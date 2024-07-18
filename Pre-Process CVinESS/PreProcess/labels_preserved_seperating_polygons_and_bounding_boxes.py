@@ -19,16 +19,7 @@ label_colors = {
     't9': (0, 0, 255),  # Blue
 
     'i1': (128, 0, 255),  # Purple
-    'i2': (255, 0, 255),  # Magenta
-    'i3': (255, 0, 128),  # Pink
-    'i4': (255, 128, 128),  # Light Pink
-    'i5': (255, 128, 255),  # Light Purple
-    'i6': (128, 128, 255),  # Light Indigo
-    'i7': (0, 128, 128),  # Teal
-    'i8': (128, 255, 255),  # Light Cyan
-    'i9': (128, 255, 128),  # Light Green
-    'i10': (255, 128, 128),  # Light Red
-    'i11': (255, 255, 128)  # Light Yellow
+
 }
 
 
