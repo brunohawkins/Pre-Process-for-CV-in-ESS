@@ -1,0 +1,4 @@
+train: /content/drive/MyDrive/My Stuff/CVinESS/Training Models/Train_and_Test1/pngs_and_yolov8txt/train
+val: /content/drive/MyDrive/My Stuff/CVinESS/Training Models/Train_and_Test1/pngs_and_yolov8txt/val
+nc: 3
+names: ['i2','i4','i6']

@@ -54,13 +54,13 @@ def parse_labelme_json(json_file):
         print(f"Error parsing {json_file}: {str(e)}")
         return None, None, None, None, None
 
-def save_segmentation_json(image_name, imagewidth, imageheight, polygons, output_folder):
+def save_segmentation_json(original_filename, imagewidth, imageheight, polygons, output_folder):
     if polygons:
         seg_output_folder = os.path.join(output_folder, 'segmentation_masks')
         os.makedirs(seg_output_folder, exist_ok=True)
-        seg_output_file = os.path.join(seg_output_folder, f'{os.path.splitext(image_name)[0]}_seg.json')
+        seg_output_file = os.path.join(seg_output_folder, original_filename)  # Retain original filename
         data = {
-            'image_name': image_name,
+            'image_name': original_filename,
             'imagewidth': imagewidth,
             'imageheight': imageheight,
             'polygons': polygons
@@ -69,17 +69,17 @@ def save_segmentation_json(image_name, imagewidth, imageheight, polygons, output
             with open(seg_output_file, 'w') as f:
                 json.dump(data, f, indent=4)
         except Exception as e:
-            print(f"Error saving segmentation JSON for {image_name}: {str(e)}")
+            print(f"Error saving segmentation JSON for {original_filename}: {str(e)}")
     else:
-        print(f"No segmentation data for {image_name}. Skipping creation of _seg.json file.")
+        print(f"No segmentation data for {original_filename}. Skipping creation of JSON file.")
 
-def save_object_detection_json(image_name, imagewidth, imageheight, bounding_boxes, output_folder):
+def save_object_detection_json(original_filename, imagewidth, imageheight, bounding_boxes, output_folder):
     if bounding_boxes:
         obj_output_folder = os.path.join(output_folder, 'bounding_boxes')
         os.makedirs(obj_output_folder, exist_ok=True)
-        obj_output_file = os.path.join(obj_output_folder, f'{os.path.splitext(image_name)[0]}_ob.json')
+        obj_output_file = os.path.join(obj_output_folder, original_filename)  # Retain original filename
         data = {
-            'image_name': image_name,
+            'image_name': original_filename,
             'imagewidth': imagewidth,
             'imageheight': imageheight,
             'bounding_boxes': bounding_boxes
@@ -88,9 +88,9 @@ def save_object_detection_json(image_name, imagewidth, imageheight, bounding_box
             with open(obj_output_file, 'w') as f:
                 json.dump(data, f, indent=4)
         except Exception as e:
-            print(f"Error saving object detection JSON for {image_name}: {str(e)}")
+            print(f"Error saving object detection JSON for {original_filename}: {str(e)}")
     else:
-        print(f"No bounding box data for {image_name}. Skipping creation of _ob.json file.")
+        print(f"No bounding box data for {original_filename}. Skipping creation of JSON file.")
 
 def process_json_files(input_folder, output_folder):
     for filename in os.listdir(input_folder):
@@ -101,8 +101,8 @@ def process_json_files(input_folder, output_folder):
                 image_name, imagewidth, imageheight, polygons, bounding_boxes = parse_labelme_json(json_file)
 
                 if image_name:
-                    save_segmentation_json(image_name, imagewidth, imageheight, polygons, output_folder)
-                    save_object_detection_json(image_name, imagewidth, imageheight, bounding_boxes, output_folder)
+                    save_segmentation_json(filename, imagewidth, imageheight, polygons, output_folder)
+                    save_object_detection_json(filename, imagewidth, imageheight, bounding_boxes, output_folder)
                     print(f"Processed: {filename}")
                 else:
                     print(f"No valid data found in {filename}. Skipping.")
